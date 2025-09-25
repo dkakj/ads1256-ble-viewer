@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ADS1256 BLE Voltage Viewer</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; padding: 2em; }
+    #voltage { font-size: 2em; margin-top: 1em; }
+    button { padding: 1em; font-size: 1em; }
+  </style>
+</head>
+<body>
+  <h1>ADS1256 BLE Voltage Viewer</h1>
+  <button onclick="connect()">Connect to Sensor</button>
+  <div id="voltage">Voltage: --</div>
+
+  <script>
+    const SERVICE_UUID = '12345678-1234-1234-1234-1234567890ab';
+    const CHARACTERISTIC_UUID = 'abcdefab-1234-5678-1234-abcdefabcdef';
+
+    async function connect() {
+      try {
+        const device = await navigator.bluetooth.requestDevice({
+          filters: [{ services: [SERVICE_UUID] }]
+        });
+
+        const server = await device.gatt.connect();
+        const service = await server.getPrimaryService(SERVICE_UUID);
+        const characteristic = await service.getCharacteristic(CHARACTERISTIC_UUID);
+
+        await characteristic.startNotifications();
+        characteristic.addEventListener('characteristicvaluechanged', handleData);
+
+        document.getElementById('voltage').textContent = 'Connected. Waiting for data...';
+      } catch (error) {
+        console.error(error);
+        alert('Connection failed: ' + error);
+      }
+    }
+
+    function handleData(event) {
+      const value = new TextDecoder().decode(event.target.value);
+      document.getElementById('voltage').textContent = `Voltage: ${value} V`;
+    }
+  </script>
+</body>
+</html>
