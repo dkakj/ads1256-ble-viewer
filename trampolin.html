@@ -11,7 +11,7 @@
   </style>
 </head>
 <body>
-  <h1>Trampolinsensor!</h1>
+  <h1>Trampolinsensor</h1>
   <button onclick="connect()">Connect to Sensor</button>
   <div id="actual">Actual: -- kg</div>
 
@@ -73,7 +73,8 @@ function handleJson(event) {
 
   try {
     const json = JSON.parse(raw);
-
+logToPage("typeof json.previous: " + typeof json.previous);
+logToPage("Is array: " + Array.isArray(json.previous));
     logToPage("Previous array length: " + (json.previous?.length ?? 'undefined'));
 
     
