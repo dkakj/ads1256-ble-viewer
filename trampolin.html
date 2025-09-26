@@ -66,9 +66,10 @@
 }
 
 
-  function handleJson(event) {
+function handleJson(event) {
   const raw = new TextDecoder().decode(event.target.value);
   logToPage("Raw JSON received: " + raw);
+logToPage("Previous array length: " + (json.previous?.length ?? 'undefined'));
 
   try {
     const json = JSON.parse(raw);
@@ -79,6 +80,7 @@
     logToPage("JSON parse error: " + e.message);
   }
 }
+
 
 
     function setupCharts() {
