@@ -38,6 +38,8 @@
         characteristic.addEventListener('characteristicvaluechanged', handleData);
 
         document.getElementById('actual').textContent = 'Connected. Waiting for data...';
+
+        document.querySelector("button").disabled = true;
         setupCharts();
       } catch (error) {
         console.error(error);
@@ -57,37 +59,41 @@
     }
 
     function setupCharts() {
-      const ctx1 = document.getElementById('currentChart').getContext('2d');
-      const ctx2 = document.getElementById('previousChart').getContext('2d');
+        if (currentChart) currentChart.destroy();
+        if (previousChart) previousChart.destroy();
+      
+        const ctx1 = document.getElementById('currentChart').getContext('2d');
+        const ctx2 = document.getElementById('previousChart').getContext('2d');
+      
+        currentChart = new Chart(ctx1, {
+          type: 'line',
+          data: {
+            labels: Array.from({ length: 100 }, (_, i) => i),
+            datasets: [{
+              label: 'Current',
+              data: [],
+              borderColor: 'blue',
+              fill: false
+            }]
+          },
+          options: { responsive: true, animation: false }
+        });
+      
+        previousChart = new Chart(ctx2, {
+          type: 'line',
+          data: {
+            labels: Array.from({ length: 100 }, (_, i) => i),
+            datasets: [{
+              label: 'Previous',
+              data: [],
+              borderColor: 'green',
+              fill: false
+            }]
+          },
+          options: { responsive: true, animation: false }
+        });
+      }
 
-      currentChart = new Chart(ctx1, {
-        type: 'line',
-        data: {
-          labels: Array.from({ length: 100 }, (_, i) => i),
-          datasets: [{
-            label: 'Current',
-            data: [],
-            borderColor: 'blue',
-            fill: false
-          }]
-        },
-        options: { responsive: true, animation: false }
-      });
-
-      previousChart = new Chart(ctx2, {
-        type: 'line',
-        data: {
-          labels: Array.from({ length: 100 }, (_, i) => i),
-          datasets: [{
-            label: 'Previous',
-            data: [],
-            borderColor: 'green',
-            fill: false
-          }]
-        },
-        options: { responsive: true, animation: false }
-      });
-    }
 
     function updateChart(chart, dataArray) {
       chart.data.datasets[0].data = dataArray;
