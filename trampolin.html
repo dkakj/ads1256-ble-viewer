@@ -11,7 +11,7 @@
   </style>
 </head>
 <body>
-  <h1>Trampolinsensor</h1>
+  <h1>Trampolinsensor!</h1>
   <button onclick="connect()">Connect to Sensor</button>
   <div id="actual">Actual: -- kg</div>
 
@@ -55,33 +55,34 @@
     }
 
    function handleKg(event) {
-      const raw = new TextDecoder().decode(event.target.value);
-      
-       logToPage("Received: " + raw)
-    
-      try {
-        const json = JSON.parse(raw);
-        document.getElementById('actual').textContent = `Actual: ${json.actual.toFixed(3)} kg`;
-        updateChart(currentChart, json.current);
-        updateChart(previousChart, json.previous);
-      } catch (e) {
-        console.warn("Failed to parse JSON:", e);
-      }
+  const raw = new TextDecoder().decode(event.target.value);
+  const kg = parseFloat(raw);
+  if (!isNaN(kg)) {
+    document.getElementById('actual').textContent = `Actual: ${kg.toFixed(3)} kg`;
+  }
+}
+
+
+  function handleJson(event) {
+  const raw = new TextDecoder().decode(event.target.value);
+  logToPage("Raw JSON received:"+ raw);
+
+  try {
+    const json = JSON.parse(raw);
+
+    // Optional: update actual from JSON if present
+    if (json.actual !== undefined) {
+      document.getElementById('actual').textContent = `Actual: ${json.actual.toFixed(3)} kg`;
     }
 
-    function handleJson(event) {
-        const raw = new TextDecoder().decode(event.target.value);
-        logToPage("Json: " + raw)
-      
-        try {
-          const json = JSON.parse(raw);
-          document.getElementById('actual').textContent = `Actual: ${json.actual.toFixed(3)} kg`;
-          updateChart(currentChart, json.current);
-          updateChart(previousChart, json.previous);
-        } catch (e) {
-          logToPage("JSON parse error:" + e.message);
-        }
-      }
+    if (Array.isArray(json.current)) updateChart(currentChart, json.current);
+    if (Array.isArray(json.previous)) updateChart(previousChart, json.previous);
+  } catch (e) {
+    logToPage("JSON parse error:"+ e.message);
+  }
+}
+
+
 
     function setupCharts() {
         if (currentChart) currentChart.destroy();
