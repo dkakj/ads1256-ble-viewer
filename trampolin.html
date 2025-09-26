@@ -1,21 +1,28 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>ADS1256 BLE Voltage Viewer</title>
+  <title>ADS1256 BLE Viewer</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body { font-family: sans-serif; text-align: center; padding: 2em; }
-    #voltage { font-size: 2em; margin-top: 1em; }
+    #actual { font-size: 2em; margin: 1em 0; }
+    canvas { max-width: 600px; margin: 2em auto; }
     button { padding: 1em; font-size: 1em; }
   </style>
 </head>
 <body>
-  <h1>ADS1256 BLE Voltage Viewer</h1>
+  <h1>ADS1256 BLE Viewer</h1>
   <button onclick="connect()">Connect to Sensor</button>
-  <div id="voltage">Voltage: --</div>
+  <div id="actual">Actual: -- kg</div>
+
+  <canvas id="currentChart"></canvas>
+  <canvas id="previousChart"></canvas>
 
   <script>
     const SERVICE_UUID = '12345678-1234-1234-1234-1234567890ab';
     const CHARACTERISTIC_UUID = 'abcdefab-1234-5678-1234-abcdefabcdef';
+
+    let currentChart, previousChart;
 
     async function connect() {
       try {
@@ -30,7 +37,8 @@
         await characteristic.startNotifications();
         characteristic.addEventListener('characteristicvaluechanged', handleData);
 
-        document.getElementById('voltage').textContent = 'Connected. Waiting for data...';
+        document.getElementById('actual').textContent = 'Connected. Waiting for data...';
+        setupCharts();
       } catch (error) {
         console.error(error);
         alert('Connection failed: ' + error);
@@ -38,8 +46,52 @@
     }
 
     function handleData(event) {
-      const value = new TextDecoder().decode(event.target.value);
-      document.getElementById('voltage').textContent = `Voltage: ${value} V`;
+      const json = JSON.parse(new TextDecoder().decode(event.target.value));
+
+      // Update actual kg
+      document.getElementById('actual').textContent = `Actual: ${json.actual.toFixed(3)} kg`;
+
+      // Update charts
+      updateChart(currentChart, json.current);
+      updateChart(previousChart, json.previous);
+    }
+
+    function setupCharts() {
+      const ctx1 = document.getElementById('currentChart').getContext('2d');
+      const ctx2 = document.getElementById('previousChart').getContext('2d');
+
+      currentChart = new Chart(ctx1, {
+        type: 'line',
+        data: {
+          labels: Array.from({ length: 100 }, (_, i) => i),
+          datasets: [{
+            label: 'Current',
+            data: [],
+            borderColor: 'blue',
+            fill: false
+          }]
+        },
+        options: { responsive: true, animation: false }
+      });
+
+      previousChart = new Chart(ctx2, {
+        type: 'line',
+        data: {
+          labels: Array.from({ length: 100 }, (_, i) => i),
+          datasets: [{
+            label: 'Previous',
+            data: [],
+            borderColor: 'green',
+            fill: false
+          }]
+        },
+        options: { responsive: true, animation: false }
+      });
+    }
+
+    function updateChart(chart, dataArray) {
+      chart.data.datasets[0].data = dataArray;
+      chart.update();
     }
   </script>
 </body>
