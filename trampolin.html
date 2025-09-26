@@ -11,7 +11,7 @@
   </style>
 </head>
 <body>
-  <h1>Trampolin sensor.</h1>
+  <h1>Trampolinsensor.</h1>
   <button onclick="connect()">Connect to Sensor</button>
   <div id="actual">Actual: -- kg</div>
 
@@ -53,7 +53,8 @@
 
    function handleData(event) {
       const raw = new TextDecoder().decode(event.target.value);
-      console.log("Received:", raw);
+      
+       logToPage("Received: " + raw)
     
       try {
         const json = JSON.parse(raw);
