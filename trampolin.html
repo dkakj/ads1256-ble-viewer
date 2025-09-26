@@ -69,6 +69,19 @@
       }
     }
 
+    function handleJson(event) {
+        const raw = new TextDecoder().decode(event.target.value);
+        logToPage("Json: " + raw)
+      
+        try {
+          const json = JSON.parse(raw);
+          document.getElementById('actual').textContent = `Actual: ${json.actual.toFixed(3)} kg`;
+          updateChart(currentChart, json.current);
+          updateChart(previousChart, json.previous);
+        } catch (e) {
+          logToPage("JSON parse error:" + e.message);
+        }
+      }
 
     function setupCharts() {
         if (currentChart) currentChart.destroy();
