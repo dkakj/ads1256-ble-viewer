@@ -11,7 +11,7 @@
   </style>
 </head>
 <body>
-  <h1>Trampolin sensor</h1>
+  <h1>Trampolin sensor!</h1>
   <button onclick="connect()">Connect to Sensor</button>
   <div id="actual">Actual: -- kg</div>
 
@@ -47,16 +47,20 @@
       }
     }
 
-    function handleData(event) {
-      const json = JSON.parse(new TextDecoder().decode(event.target.value));
-
-      // Update actual kg
-      document.getElementById('actual').textContent = `Actual: ${json.actual.toFixed(3)} kg`;
-
-      // Update charts
-      updateChart(currentChart, json.current);
-      updateChart(previousChart, json.previous);
+   function handleData(event) {
+      const raw = new TextDecoder().decode(event.target.value);
+      console.log("Received:", raw);
+    
+      try {
+        const json = JSON.parse(raw);
+        document.getElementById('actual').textContent = `Actual: ${json.actual.toFixed(3)} kg`;
+        updateChart(currentChart, json.current);
+        updateChart(previousChart, json.previous);
+      } catch (e) {
+        console.warn("Failed to parse JSON:", e);
+      }
     }
+
 
     function setupCharts() {
         if (currentChart) currentChart.destroy();
