@@ -11,19 +11,23 @@
   </style>
 </head>
 <body>
-  <h1>Trampolin sensor!</h1>
+  <h1>Trampolin sensor.</h1>
   <button onclick="connect()">Connect to Sensor</button>
   <div id="actual">Actual: -- kg</div>
 
   <canvas id="currentChart"></canvas>
   <canvas id="previousChart"></canvas>
+<pre id="log" style="text-align:left; max-width:600px; margin:2em auto; background:#eee; padding:1em;"></pre>
 
   <script>
     const SERVICE_UUID = '12345678-1234-1234-1234-1234567890ab';
     const CHARACTERISTIC_UUID = 'abcdefab-1234-5678-1234-abcdefabcdef';
 
     let currentChart, previousChart;
-
+    function logToPage(message) {
+      const logDiv = document.getElementById('log');
+      logDiv.textContent += message + '\n';
+    }
     async function connect() {
       try {
         const device = await navigator.bluetooth.requestDevice({
