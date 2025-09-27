@@ -11,7 +11,7 @@
   </style>
 </head>
 <body>
-  <h1>Trampolin Sensor</h1>
+  <h1>Trampolinsensor</h1>
   <button onclick="connect()">Connect to Sensor</button>
   <div id="actual">Actual: -- kg</div>
 
@@ -70,24 +70,19 @@ function handleJson(event) {
   const raw = new TextDecoder().decode(event.target.value);
   logToPage("Raw JSON received: " + raw);
 
+
   try {
     const json = JSON.parse(raw);
+logToPage("typeof json.previous: " + typeof json.previous);
+logToPage("Is array: " + Array.isArray(json.previous));
+    logToPage("Previous array length: " + (json.previous?.length ?? 'undefined'));
 
-    // Check which key exists in this notification
-    if (Array.isArray(json.previous)) {
-      logToPage("Received previous array, length: " + json.previous.length);
-      updateChart(previousChart, json.previous);
-    } 
-    else if (Array.isArray(json.current)) {
-      logToPage("Received current array, length: " + json.current.length);
-      updateChart(currentChart, json.current);
-    }
     
+    if (Array.isArray(json.current)) updateChart(currentChart, json.current);
+    if (Array.isArray(json.previous)) updateChart(previousChart, json.previous);
   } catch (e) {
     logToPage("JSON parse error: " + e.message);
   }
-}
-
 }
 
 
