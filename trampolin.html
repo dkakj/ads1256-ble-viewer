@@ -11,7 +11,7 @@
   </style>
 </head>
 <body>
-  <h1>Trampolinsensor</h1>
+  <h1>Trampolin sensor</h1>
   <button onclick="connect()">Connect to Sensor</button>
   <div id="actual">Actual: -- kg</div>
 
@@ -24,10 +24,32 @@
     const KG_UUID = 'feedfeed-1234-5678-1234-feedfeedfeed';
     const JSON_UUID = 'abcdefab-1234-5678-1234-abcdefabcdef';
 
+  const maxLabelPlugin = {
+  id: 'maxLabelPlugin',
+  afterDatasetsDraw(chart) {
+    const ctx = chart.ctx;
+    chart.data.datasets.forEach((dataset, datasetIndex) => {
+      const meta = chart.getDatasetMeta(datasetIndex);
+      const data = dataset.data;
+      const maxValue = Math.max(...data);
+      const maxIndex = data.indexOf(maxValue);
+      const point = meta.data[maxIndex];
+
+      if (point) {
+        ctx.save();
+        ctx.fillStyle = 'red';
+        ctx.font = 'bold 12px sans-serif';
+        ctx.fillText(`Max: ${maxValue}`, point.x, point.y - 10);
+        ctx.restore();
+      }
+    });
+  }
+};
+    
     let currentChart, previousChart;
     function logToPage(message) {
       const logDiv = document.getElementById('log');
-      logDiv.textContent += message + '\n';
+    //  logDiv.textContent += message + '\n';
     }
     async function connect() {
       try {
@@ -55,14 +77,12 @@
     }
 
    function handleKg(event) {
-
-       
-  const raw = new TextDecoder().decode(event.target.value);
-   //  logToPage("received: " + raw);
-  const kg = parseFloat(raw);
-  if (!isNaN(kg)) {
-    document.getElementById('actual').textContent = `Actual: ${kg.toFixed(3)} kg`;
-  }
+      const raw = new TextDecoder().decode(event.target.value);
+       //  logToPage("received: " + raw);
+      const kg = parseFloat(raw);
+      if (!isNaN(kg)) {
+        document.getElementById('actual').textContent = `Actual: ${kg.toFixed(3)} kg`;
+      }
 }
 
 
@@ -110,7 +130,8 @@ function handleJson(event) {
               fill: false
             }]
           },
-          options: { responsive: true, animation: false }
+          options: { responsive: true, animation: false },
+            plugins: [maxLabelPlugin]
         });
       
         previousChart = new Chart(ctx2, {
@@ -124,7 +145,8 @@ function handleJson(event) {
               fill: false
             }]
           },
-          options: { responsive: true, animation: false }
+          options: { responsive: true, animation: false },
+          
         });
       }
 
