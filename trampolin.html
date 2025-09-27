@@ -261,33 +261,39 @@ footer {
     }
 
 function updateTop3(dataArray) {
-  dataArray.forEach(value => {
-    if (typeof value !== 'number' || isNaN(value)) return;
+  let updated = false;
 
-    // Only update if we have fewer than 3 values
+  for (const value of dataArray) {
+    if (typeof value !== 'number' || isNaN(value)) continue;
+
     if (top3Values.length < 3) {
       top3Values.push(value);
+      updated = true;
+      break; // Only one update per call
     } else {
       const minValue = Math.min(...top3Values);
       if (value > minValue) {
         const minIndex = top3Values.indexOf(minValue);
         top3Values[minIndex] = value;
+        updated = true;
+        break; // Only one update per call
       }
     }
-  });
+  }
 
-  // Sort descending
-  top3Values.sort((a, b) => b - a);
+  if (updated) {
+    top3Values.sort((a, b) => b - a);
 
-  // Update UI
-  const list = document.getElementById('maxList');
-  list.innerHTML = '';
-  top3Values.forEach((value, index) => {
-    const li = document.createElement('li');
-    li.textContent = `#${index + 1}: ${value.toFixed(2)} kg`;
-    list.appendChild(li);
-  });
+    const list = document.getElementById('maxList');
+    list.innerHTML = '';
+    top3Values.forEach((value, index) => {
+      const li = document.createElement('li');
+      li.textContent = `#${index + 1}: ${value.toFixed(2)} kg`;
+      list.appendChild(li);
+    });
+  }
 }
+
 
 
 function resetTop3() {
