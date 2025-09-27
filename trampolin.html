@@ -1,13 +1,60 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Trampolin sensor</title>
+  <meta charset="UTF-8" />
+  <title>Trampolinsensor</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body { font-family: sans-serif; text-align: center; padding: 2em; }
-    #actual { font-size: 2em; margin: 1em 0; }
-    canvas { max-width: 600px; margin: 2em auto; }
-    button { padding: 1em; font-size: 1em; }
+    :root {
+      --primary-color: #003366;
+      --accent-color: #FF6600;
+      --bg-color: #f9f9f9;
+      --text-color: #333;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 2em;
+      text-align: center;
+    }
+
+    h1 {
+      color: var(--primary-color);
+      font-size: 2.5em;
+      margin-bottom: 0.5em;
+    }
+
+    button {
+      background-color: var(--accent-color);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 1em 2em;
+      font-size: 1em;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #e65c00;
+    }
+
+    #actual {
+      font-size: 2em;
+      margin: 1.5em 0;
+      color: var(--primary-color);
+    }
+
+    canvas {
+      max-width: 700px;
+      margin: 2em auto;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
   </style>
 </head>
 <body>
@@ -17,58 +64,54 @@
 
   <canvas id="currentChart"></canvas>
   <canvas id="previousChart"></canvas>
-<!-- <pre id="log" style="text-align:left; max-width:600px; margin:2em auto; background:#eee; padding:1em;"></pre>-->
 
   <script>
     const SERVICE_UUID = '12345678-1234-1234-1234-1234567890ab';
     const KG_UUID = 'feedfeed-1234-5678-1234-feedfeedfeed';
     const JSON_UUID = 'abcdefab-1234-5678-1234-abcdefabcdef';
 
-  const maxLabelPlugin = {
-  id: 'maxLabelPlugin',
-  afterDatasetsDraw(chart) {
-    const ctx = chart.ctx;
-    chart.data.datasets.forEach((dataset, datasetIndex) => {
-      const meta = chart.getDatasetMeta(datasetIndex);
-      const data = dataset.data;
-      const maxValue = Math.max(...data);
-      const maxIndex = data.indexOf(maxValue);
-      const point = meta.data[maxIndex];
+    const maxLabelPlugin = {
+      id: 'maxLabelPlugin',
+      afterDatasetsDraw(chart) {
+        const ctx = chart.ctx;
+        chart.data.datasets.forEach((dataset, datasetIndex) => {
+          const meta = chart.getDatasetMeta(datasetIndex);
+          const data = dataset.data;
+          const maxValue = Math.max(...data);
+          const maxIndex = data.indexOf(maxValue);
+          const point = meta.data[maxIndex];
 
-      if (point) {
-        ctx.save();
-        ctx.fillStyle = 'red';
-        ctx.font = 'bold 12px sans-serif';
-        ctx.fillText(`Max: ${maxValue}`, point.x, point.y - 10);
-        ctx.restore();
+          if (point) {
+            ctx.save();
+            ctx.fillStyle = 'red';
+            ctx.font = 'bold 12px sans-serif';
+            ctx.fillText(`Max: ${maxValue}`, point.x, point.y - 10);
+            ctx.restore();
+          }
+        });
       }
-    });
-  }
-};
-    
+    };
+
     let currentChart, previousChart;
-    function logToPage(message) {
-      const logDiv = document.getElementById('log');
-    //  logDiv.textContent += message + '\n';
-    }
+
     async function connect() {
       try {
         const device = await navigator.bluetooth.requestDevice({
-            filters: [{ services: [SERVICE_UUID] }]
-          });
+          filters: [{ services: [SERVICE_UUID] }]
+        });
 
         const server = await device.gatt.connect();
         const service = await server.getPrimaryService(SERVICE_UUID);
-      
+
         const kgChar = await service.getCharacteristic(KG_UUID);
         const jsonChar = await service.getCharacteristic(JSON_UUID);
-      
+
         await kgChar.startNotifications();
         await jsonChar.startNotifications();
-      
+
         kgChar.addEventListener('characteristicvaluechanged', handleKg);
         jsonChar.addEventListener('characteristicvaluechanged', handleJson);
-      
+
         setupCharts();
       } catch (error) {
         console.error(error);
@@ -76,84 +119,71 @@
       }
     }
 
-   function handleKg(event) {
+    function handleKg(event) {
       const raw = new TextDecoder().decode(event.target.value);
-       //  logToPage("received: " + raw);
       const kg = parseFloat(raw);
       if (!isNaN(kg)) {
         document.getElementById('actual').textContent = `Actual: ${kg.toFixed(2)} kg`;
       }
-}
-
-
-function handleJson(event) {
-  const raw = new TextDecoder().decode(event.target.value);
-  logToPage("Raw JSON received: " + raw);
-
-  try {
-    const json = JSON.parse(raw);
-
-    // Check which key exists in this notification
-    if (Array.isArray(json.previous)) {
-      logToPage("Received previous array, length: " + json.previous.length);
-      updateChart(previousChart, json.previous);
-    } 
-    else if (Array.isArray(json.current)) {
-      logToPage("Received current array, length: " + json.current.length);
-      updateChart(currentChart, json.current);
     }
-    
-  } catch (e) {
-    logToPage("JSON parse error: " + e.message);
-  }
-}
 
-
-
-
+    function handleJson(event) {
+      const raw = new TextDecoder().decode(event.target.value);
+      try {
+        const json = JSON.parse(raw);
+        if (Array.isArray(json.previous)) {
+          updateChart(previousChart, json.previous);
+        } else if (Array.isArray(json.current)) {
+          updateChart(currentChart, json.current);
+        }
+      } catch (e) {
+        console.error("JSON parse error:", e.message);
+      }
+    }
 
     function setupCharts() {
-        if (currentChart) currentChart.destroy();
-        if (previousChart) previousChart.destroy();
-      
-        const ctx1 = document.getElementById('currentChart').getContext('2d');
-        const ctx2 = document.getElementById('previousChart').getContext('2d');
-      
-        currentChart = new Chart(ctx1, {
-          type: 'line',
-          data: {
-            labels: Array.from({ length: 50 }, (_, i) => i),
-            datasets: [{
-              label: 'Current',
-              data: [],
-              borderColor: 'blue',
-              fill: false,
-              pointRadius: 0,
-              pointHoverRadius: 0 
-            }]
-          },
-          options: { responsive: true, animation: false },
-            plugins: [maxLabelPlugin]
-        });
-      
-        previousChart = new Chart(ctx2, {
-          type: 'line',
-          data: {
-            labels: Array.from({ length: 50 }, (_, i) => i),
-            datasets: [{
-              label: 'Previous',
-              data: [],
-              borderColor: 'green',
-              fill: false,
-              pointRadius: 0,
-              pointHoverRadius: 0 
-            }]
-          },
-          options: { responsive: true, animation: false },
-           plugins: [maxLabelPlugin]
-        });
-      }
+      if (currentChart) currentChart.destroy();
+      if (previousChart) previousChart.destroy();
 
+      const ctx1 = document.getElementById('currentChart').getContext('2d');
+      const ctx2 = document.getElementById('previousChart').getContext('2d');
+
+      currentChart = new Chart(ctx1, {
+        type: 'line',
+        data: {
+          labels: Array.from({ length: 50 }, (_, i) => i),
+          datasets: [{
+            label: 'Current',
+            data: [],
+            borderColor: '#003366',
+            backgroundColor: 'rgba(0, 51, 102, 0.1)',
+            fill: true,
+            pointRadius: 0,
+            pointHoverRadius: 4
+          }]
+        },
+        options: { responsive: true, animation: false },
+        plugins: [maxLabelPlugin]
+      });
+
+      previousChart = new Chart(ctx2, {
+        type: 'line',
+        data: {
+          labels: Array.from({ length: 50 }, (_, i) => i),
+          datasets: [{
+            label: 'Previous',
+            data: [],
+            borderColor: '#FF6600',
+            backgroundColor: 'rgba(255, 102, 0, 0.1)',
+            fill: true,
+            pointRadius: 0,
+            pointHoverRadius: 4
+          }]
+        },
+        options: { responsive: true, animation: false },
+        plugins: [maxLabelPlugin]
+      });
+    }
 
     function updateChart(chart, dataArray) {
       chart.data.datasets[0].data = dataArray;
