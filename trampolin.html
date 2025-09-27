@@ -264,11 +264,10 @@ function updateTop3(dataArray) {
   dataArray.forEach(value => {
     if (typeof value !== 'number' || isNaN(value)) return;
 
-    // Add value if we have less than 3
+    // Only update if we have fewer than 3 values
     if (top3Values.length < 3) {
       top3Values.push(value);
     } else {
-      // Replace lowest if current value is higher
       const minValue = Math.min(...top3Values);
       if (value > minValue) {
         const minIndex = top3Values.indexOf(minValue);
@@ -289,6 +288,7 @@ function updateTop3(dataArray) {
     list.appendChild(li);
   });
 }
+
 
 function resetTop3() {
   top3Values = [];
