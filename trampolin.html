@@ -116,6 +116,12 @@ footer {
     <div id="actual">Actual: -- kg</div>
     <canvas id="currentChart"></canvas>
     <canvas id="previousChart"></canvas>
+
+    <div id="top3" style="margin-top: 2em;">
+      <h2>Top 3</h2>
+      <ul id="maxList" style="list-style: none; padding: 0; font-size: 1.2em;"></ul>
+    </div>
+    
   </main>
 
   <footer>
@@ -193,6 +199,7 @@ footer {
           updateChart(previousChart, json.previous);
         } else if (Array.isArray(json.current)) {
           updateChart(currentChart, json.current);
+          updateTop3(json.current);
         }
       } catch (e) {
         console.error("JSON parse error:", e.message);
@@ -247,6 +254,21 @@ footer {
       chart.data.datasets[0].data = dataArray;
       chart.update();
     }
+
+function updateTop3(dataArray) {
+  const sorted = [...dataArray].sort((a, b) => b - a);
+  const top3 = sorted.slice(0, 3);
+  const list = document.getElementById('maxList');
+  list.innerHTML = '';
+
+  top3.forEach((value, index) => {
+    const li = document.createElement('li');
+    li.textContent = `#${index + 1}: ${value.toFixed(2)} kg`;
+    list.appendChild(li);
+  });
+}
+
+    
   </script>
 </body>
 </html>
