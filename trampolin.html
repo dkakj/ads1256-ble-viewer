@@ -108,7 +108,7 @@ footer {
 </head>
 <body>
 <header>
-  <h1>Trampolinsensor!</h1>
+  <h1>Trampolinsensor</h1>
   <div style="display: flex; gap: 1em;">
     <span class="connect-link" onclick="connect()">Connect to Sensor</span>
     <span class="connect-link" onclick="resetTop3()">Reset Max</span>
@@ -261,24 +261,19 @@ footer {
     }
 
 function updateTop3(dataArray) {
-  for (const value of dataArray) {
-    if (typeof value !== 'number' || isNaN(value)) continue;
+  const maxInData = Math.max(...dataArray.filter(v => typeof v === 'number' && !isNaN(v)));
 
-    if (top3Values.length < 3) {
-      top3Values.push(value);
-      break; // Only one update per call
-    } else {
-      const minValue = Math.min(...top3Values);
-      if (value > minValue) {
-        const minIndex = top3Values.indexOf(minValue);
-        top3Values[minIndex] = value;
-        break; // Only one update per call
-      }
-    }
-  }
+  // If no valid number found, exit
+  if (isNaN(maxInData)) return;
 
-  top3Values.sort((a, b) => b - a);
+  top3Values.push(maxInData);
 
+  // Sort descending and keep only top 3
+  top3Values = top3Values
+    .sort((a, b) => b - a)
+    .slice(0, 3);
+
+  // Update UI
   const list = document.getElementById('maxList');
   list.innerHTML = '';
   top3Values.forEach((value, index) => {
