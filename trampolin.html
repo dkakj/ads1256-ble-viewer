@@ -11,7 +11,7 @@
   </style>
 </head>
 <body>
-  <h1>Trampolin Sensor</h1>
+  <h1>Trampolinsensor</h1>
   <button onclick="connect()">Connect to Sensor</button>
   <div id="actual">Actual: -- kg</div>
 
@@ -102,7 +102,7 @@ function handleJson(event) {
         currentChart = new Chart(ctx1, {
           type: 'line',
           data: {
-            labels: Array.from({ length: 100 }, (_, i) => i),
+            labels: Array.from({ length: 50 }, (_, i) => i),
             datasets: [{
               label: 'Current',
               data: [],
@@ -116,7 +116,7 @@ function handleJson(event) {
         previousChart = new Chart(ctx2, {
           type: 'line',
           data: {
-            labels: Array.from({ length: 100 }, (_, i) => i),
+            labels: Array.from({ length: 50 }, (_, i) => i),
             datasets: [{
               label: 'Previous',
               data: [],
