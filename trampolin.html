@@ -164,6 +164,11 @@ footer {
 
     async function connect() {
       try {
+  
+        if (!navigator.bluetooth) {
+          alert("Web Bluetooth er ikke understøttet på denne enhed eller browser :-(");
+        }
+        
         const device = await navigator.bluetooth.requestDevice({
           filters: [{ services: [SERVICE_UUID] }]
         });
