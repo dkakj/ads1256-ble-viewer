@@ -103,7 +103,28 @@ footer {
     font-size: 1.5em;
   }
 }
+.chart-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2em;
+  justify-content: center;
+  align-items: flex-start;
+  margin-top: 2em;
+}
 
+.chart-container canvas {
+  width: 100%;
+  max-width: 500px;
+  height: auto;
+}
+
+/* Stack charts vertically on small screens */
+@media (max-width: 600px) {
+  .chart-container {
+    flex-direction: column;
+    align-items: center;
+  }
+}
 </style>
 </head>
 <body>
@@ -117,9 +138,10 @@ footer {
 
   <main>
     <div id="actual">-- kg</div>
-    <canvas id="currentChart"></canvas>
-    <canvas id="previousChart"></canvas>
-
+    <div class="chart-container">
+      <canvas id="currentChart"></canvas>
+      <canvas id="previousChart"></canvas>
+    </div>
     <div id="top3" style="margin-top: 2em;">
       <h2>Top 3</h2>
       <ul id="maxList" style="list-style: none; padding: 0; font-size: 1.2em;"></ul>
