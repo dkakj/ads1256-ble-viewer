@@ -61,7 +61,7 @@ main {
 }
 
 #actual {
-  font-size: 2em;
+  font-size: 1.5em;
   margin: 0.5em 0;
   color: var(--primary-color);
 }
@@ -150,9 +150,10 @@ footer {
       <canvas id="previousChart"></canvas>
     </div>
     <div id="top3" style="margin-top: 2em;">
-      <div id="actual">-- kg</div>
+      
       <h2>Top 3</h2>
       <ul id="maxList" style="list-style: none; padding: 0; font-size: 1.2em;"></ul>
+      <div id="actual">-- kg</div>
     </div>
     
   </main>
@@ -182,8 +183,8 @@ footer {
           if (point) {
             ctx.save();
             ctx.fillStyle = 'red';
-            ctx.font = 'bold 12px sans-serif';
-            ctx.fillText(`Max: ${maxValue}`, point.x, point.y - 10);
+            ctx.font = 'bold 24px sans-serif';
+            ctx.fillText(`Max: ${maxValue}`, point.x, point.y - 30);
             ctx.restore();
           }
         });
