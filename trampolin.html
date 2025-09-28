@@ -116,7 +116,7 @@ footer {
 </header>
 
   <main>
-    <div id="actual">Actual: -- kg</div>
+    <div id="actual">-- kg</div>
     <canvas id="currentChart"></canvas>
     <canvas id="previousChart"></canvas>
 
@@ -191,7 +191,7 @@ footer {
       const raw = new TextDecoder().decode(event.target.value);
       const kg = parseFloat(raw);
       if (!isNaN(kg)) {
-        document.getElementById('actual').textContent = `Actual: ${kg.toFixed(2)} kg`;
+        document.getElementById('actual').textContent = `${kg.toFixed(2)} kg`;
       }
     }
 
