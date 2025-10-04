@@ -216,27 +216,33 @@ footer {
         if (!navigator.bluetooth) {
           alert("Web Bluetooth er ikke understøttet på denne enhed eller browser :-(");
         }
+        try {
+          const device = await navigator.bluetooth.requestDevice({
+            filters: [{ services: [SERVICE_UUID] }]
+          });
+  
+          const server = await device.gatt.connect();
+          const service = await server.getPrimaryService(SERVICE_UUID);
+  
+          const kgChar = await service.getCharacteristic(KG_UUID);
+          const jsonChar = await service.getCharacteristic(JSON_UUID);
+  
+          await kgChar.startNotifications();
+          await jsonChar.startNotifications();
+  
+          kgChar.addEventListener('characteristicvaluechanged', handleKg);
+          jsonChar.addEventListener('characteristicvaluechanged', handleJson);
+          
+          const speedChar = await service.getCharacteristic(SPEED_UUID);
+          await speedChar.startNotifications();
+          speedChar.addEventListener('characteristicvaluechanged', handleSpeed);
+        }
         
-        const device = await navigator.bluetooth.requestDevice({
-          filters: [{ services: [SERVICE_UUID] }]
-        });
+        catch (error) {
+          console.error("Bluetooth error:", error.name, error.message);
+          alert(`Connection failed: ${error.name} - ${error.message}`);
+        }
 
-        const server = await device.gatt.connect();
-        const service = await server.getPrimaryService(SERVICE_UUID);
-
-        const kgChar = await service.getCharacteristic(KG_UUID);
-        const jsonChar = await service.getCharacteristic(JSON_UUID);
-
-        await kgChar.startNotifications();
-        await jsonChar.startNotifications();
-
-        kgChar.addEventListener('characteristicvaluechanged', handleKg);
-        jsonChar.addEventListener('characteristicvaluechanged', handleJson);
-        
-        const speedChar = await service.getCharacteristic(SPEED_UUID);
-        await speedChar.startNotifications();
-        speedChar.addEventListener('characteristicvaluechanged', handleSpeed);
-        
         setupCharts();
       } catch (error) {
         console.error(error);
