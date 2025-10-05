@@ -260,6 +260,10 @@ footer {
     function handleSpeed(event) {
         const raw = new TextDecoder().decode(event.target.value);
         const speedValue = parseFloat(raw);
+      
+        console.log("Received speed raw:", raw); 
+      console.log("Received speed:", speedValue); 
+
         if (!isNaN(speedValue)) {
             //document.getElementById('speedDisplay').textContent = `Hastighed: ${speedValue.toFixed(2)} km/h`;
              // Update plugin text for chart
