@@ -258,12 +258,17 @@ footer {
       }
     }
     function handleSpeed(event) {
-    const raw = new TextDecoder().decode(event.target.value);
-    const speedValue = parseFloat(raw);
-    if (!isNaN(speedValue)) {
-        document.getElementById('speedDisplay').textContent = `Hastighed: ${speedValue.toFixed(2)} km/h`;
+        const raw = new TextDecoder().decode(event.target.value);
+        const speedValue = parseFloat(raw);
+        if (!isNaN(speedValue)) {
+            //document.getElementById('speedDisplay').textContent = `Hastighed: ${speedValue.toFixed(2)} km/h`;
+             // Update plugin text for chart
+             window.latestSpeedText = `Hastighed: ${speedValue.toFixed(2)} km/h`;
+
+            // Refresh chart to trigger plugin draw
+            if (currentChart) currentChart.update('none'); // 'none' to avoid full re-render
+        }
     }
-}
 
    function handleJson(event) {
       const text = new TextDecoder().decode(event.target.value);
