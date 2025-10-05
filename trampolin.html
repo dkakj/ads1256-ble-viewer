@@ -136,7 +136,7 @@ footer {
 </head>
 <body>
 <header>
-  <h1>Trampolinsensor.</h1>
+  <h1>Trampolinsensor</h1>
   <div style="display: flex; gap: 1em;">
     <span class="connect-link" onclick="connect()">Connect</span>
     <span class="connect-link" onclick="resetTop3()">Reset Max</span>
@@ -272,18 +272,28 @@ footer {
         }
       }
 
-    function handleJson(event) {
-      const raw = new TextDecoder().decode(event.target.value);
-      try {
-        const json = JSON.parse(raw);
-        if (Array.isArray(json.previous)) {
-          updateChart(previousChart, json.previous);
-        } else if (Array.isArray(json.current)) {
-          updateChart(currentChart, json.current);
-          updateTop3(json.current);
-        }
-      } catch (e) {
-        console.error("JSON parse error:", e.message);
+   function handleJson(event) {
+      const text = new TextDecoder().decode(event.target.value);
+      const [indexStr, valueStr] = text.split(':');
+      const index = parseInt(indexStr);
+      const value = parseFloat(valueStr);
+    
+      if (isNaN(index) || isNaN(value)) return;
+    
+      // When a new sequence starts
+      if (index === 0) {
+        // Copy current chart data to previous chart
+        previousChart.data.datasets[0].data = [...currentChart.data.datasets[0].data];
+      }
+    
+      // Assign value directly into the current chart’s dataset
+      currentChart.data.datasets[0].data[index] = value;
+    
+      // When last element arrives, update both charts visually
+      if (index === currentChart.data.datasets[0].data.length - 1) {
+        previousChart.update();
+        currentChart.update();
+        updateTop3(currentChart.data.datasets[0].data);
       }
     }
 
