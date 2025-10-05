@@ -258,19 +258,12 @@ footer {
       }
     }
     function handleSpeed(event) {
-        const raw = new TextDecoder().decode(event.target.value);
-        try {
-          const json = JSON.parse(raw);
-          if (Array.isArray(json.speed)) {
-            const speedValue = parseFloat(json.speed[0]);
-            if (!isNaN(speedValue)) {
-              document.getElementById('speedDisplay').textContent = `Hastighed: ${speedValue.toFixed(2)} km/h`;
-            }
-          }
-        } catch (e) {
-          console.error("Speed JSON parse error:", e.message);
-        }
-      }
+    const raw = new TextDecoder().decode(event.target.value);
+    const speedValue = parseFloat(raw);
+    if (!isNaN(speedValue)) {
+        document.getElementById('speedDisplay').textContent = `Hastighed: ${speedValue.toFixed(2)} km/h`;
+    }
+}
 
    function handleJson(event) {
       const text = new TextDecoder().decode(event.target.value);
