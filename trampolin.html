@@ -174,65 +174,40 @@ footer {
 	  id: 'maxKgLabelPlugin',
 	  afterDraw(chart) {
 		const ctx = chart.ctx;
-		const canvas = chart.canvas;
-
-		// Get max kg from first dataset
+		const chartArea = chart.chartArea;
 		const data = chart.data.datasets[0]?.data || [];
 		const maxKg = Math.max(...data);
-		const maxKgText = `${maxKg.toFixed(2)} kg`;
+		const maxKgText = `Max kg: ${maxKg.toFixed(2)}`;
 
 		ctx.save();
-		ctx.font = 'bold 24px sans-serif';
+		ctx.font = 'bold 16px sans-serif';
 		ctx.fillStyle = '#000000';
 		ctx.textAlign = 'right';
 
-		// Draw max kg above speed label
-		ctx.fillText(maxKgText, canvas.width + 50, canvas.height - 30);
+		// Draw just above speed label
+		ctx.fillText(maxKgText, chartArea.right - 10, chartArea.bottom - 30);
 		ctx.restore();
 	  }
 	};
-    const maxLabelPlugin_ = {
-      id: 'maxLabelPlugin',
-      afterDatasetsDraw(chart) {
-        const ctx = chart.ctx;
-        chart.data.datasets.forEach((dataset, datasetIndex) => {
-          const meta = chart.getDatasetMeta(datasetIndex);
-          const data = dataset.data;
-          const maxValue = Math.max(...data);
-          const maxIndex = data.indexOf(maxValue);
-          const point = meta.data[maxIndex];
+	  
 
-          if (point) {
-            ctx.save();
-            ctx.fillStyle = '#000000';
-            ctx.font = 'bold 24px sans-serif';
-            ctx.fillText(`${maxValue} Kg.`, point.x, point.y - 30);
-            ctx.restore();
-          }
-        });
-      }
-    };
+	const speedLabelPlugin = {
+	  id: 'speedLabelPlugin',
+	  afterDraw(chart) {
+		const ctx = chart.ctx;
+		const chartArea = chart.chartArea;
+		const speedText = window.latestSpeedText || '-- km/h';
 
-  
+		ctx.save();
+		ctx.font = 'bold 16px sans-serif';
+		ctx.fillStyle = '#000000';
+		ctx.textAlign = 'right';
 
-  const speedLabelPlugin = {
-  id: 'speedLabelPlugin',
-  afterDraw(chart) {
-    const ctx = chart.ctx;
-    const canvas = chart.canvas;
-    const speedText = window.latestSpeedText || '-- km/h';
-
-    ctx.save();
-    ctx.font = 'bold 20px sans-serif';
-    ctx.fillStyle = '#000000';
-    ctx.textAlign = 'right';
-
-    // Draw inside canvas, bottom-right corner
-    ctx.fillText(speedText, canvas.width - 10, canvas.height - 10);
-    ctx.restore();
-  }
-};
-
+		// Draw inside chart area, bottom-right
+		ctx.fillText(speedText, chartArea.right - 10, chartArea.bottom - 10);
+		ctx.restore();
+	  }
+	};
     let currentChart, previousChart;
 
     async function connect() {
