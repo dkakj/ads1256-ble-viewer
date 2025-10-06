@@ -223,10 +223,12 @@ footer {
     const speedText = window.latestSpeedText || '-- km/h';
 
     ctx.save();
-    ctx.font = 'bold 24px sans-serif';
+    ctx.font = 'bold 20px sans-serif';
     ctx.fillStyle = '#000000';
     ctx.textAlign = 'right';
-    ctx.fillText(speedText, canvas.width + 50 , canvas.height );
+
+    // Draw inside canvas, bottom-right corner
+    ctx.fillText(speedText, canvas.width - 10, canvas.height - 10);
     ctx.restore();
   }
 };
