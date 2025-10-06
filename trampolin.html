@@ -170,7 +170,7 @@ footer {
     const JSON_UUID = 'abcdefab-1234-5678-1234-abcdefabcdef';
     const SPEED_UUID = 'feedfeed-1234-5678-1234-feedfeed9876';
 
-    const maxLabelPlugin = {
+    const maxLabelPlugin_old = {
       id: 'maxLabelPlugin',
       afterDatasetsDraw(chart) {
         const ctx = chart.ctx;
@@ -186,6 +186,28 @@ footer {
             ctx.fillStyle = '#000000';
             ctx.font = 'bold 24px sans-serif';
             //ctx.fillText(`Max: ${maxValue}`, point.x, point.y - 30);
+            ctx.fillText(`Max: ${maxValue}`, canvas.width -10, canvas.height - 30);
+            ctx.restore();
+          }
+        });
+      }
+    };
+
+    const maxLabelPlugin = {
+      id: 'maxLabelPlugin',
+      afterDatasetsDraw(chart) {
+        const ctx = chart.ctx;
+        chart.data.datasets.forEach((dataset, datasetIndex) => {
+          const meta = chart.getDatasetMeta(datasetIndex);
+          const data = dataset.data;
+          const maxValue = Math.max(...data);
+          const maxIndex = data.indexOf(maxValue);
+          const point = meta.data[maxIndex];
+
+          if (point) {
+            ctx.save();
+            ctx.fillStyle = '#000000';
+            ctx.font = 'bold 24px sans-serif';
             ctx.fillText(`Max: ${maxValue}`, canvas.width -10, canvas.height - 30);
             ctx.restore();
           }
