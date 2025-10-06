@@ -170,7 +170,28 @@ footer {
     const JSON_UUID = 'abcdefab-1234-5678-1234-abcdefabcdef';
     const SPEED_UUID = 'feedfeed-1234-5678-1234-feedfeed9876';
 
-    const maxLabelPlugin_old = {
+	const maxLabelPlugin = {
+	  id: 'maxKgLabelPlugin',
+	  afterDraw(chart) {
+		const ctx = chart.ctx;
+		const canvas = chart.canvas;
+
+		// Get max kg from first dataset
+		const data = chart.data.datasets[0]?.data || [];
+		const maxKg = Math.max(...data);
+		const maxKgText = `${maxKg.toFixed(2)} kg`;
+
+		ctx.save();
+		ctx.font = 'bold 24px sans-serif';
+		ctx.fillStyle = '#000000';
+		ctx.textAlign = 'right';
+
+		// Draw max kg above speed label
+		ctx.fillText(maxKgText, canvas.width + 50, canvas.height - 30);
+		ctx.restore();
+	  }
+	};
+    const maxLabelPlugin_ = {
       id: 'maxLabelPlugin',
       afterDatasetsDraw(chart) {
         const ctx = chart.ctx;
@@ -185,48 +206,27 @@ footer {
             ctx.save();
             ctx.fillStyle = '#000000';
             ctx.font = 'bold 24px sans-serif';
-            //ctx.fillText(`Max: ${maxValue}`, point.x, point.y - 30);
-            ctx.fillText(`Max: ${maxValue}`, canvas.width -10, canvas.height - 30);
+            ctx.fillText(`${maxValue} Kg.`, point.x, point.y - 30);
             ctx.restore();
           }
         });
       }
     };
 
-    const maxLabelPlugin = {
-      id: 'maxLabelPlugin',
-      afterDatasetsDraw(chart) {
-        const ctx = chart.ctx;
-        chart.data.datasets.forEach((dataset, datasetIndex) => {
-          const meta = chart.getDatasetMeta(datasetIndex);
-          const data = dataset.data;
-          const maxValue = Math.max(...data);
-          const maxIndex = data.indexOf(maxValue);
-          const point = meta.data[maxIndex];
-
-          if (point) {
-            ctx.save();
-            ctx.fillStyle = '#000000';
-            ctx.font = 'bold 24px sans-serif';
-            ctx.fillText(`Max: ${maxValue}`, canvas.width -10, canvas.height - 30);
-            ctx.restore();
-          }
-        });
-      }
-    };
+  
 
   const speedLabelPlugin = {
   id: 'speedLabelPlugin',
   afterDraw(chart) {
     const ctx = chart.ctx;
     const canvas = chart.canvas;
-    const speedText = window.latestSpeedText || 'Hastighed: -- km/h';
+    const speedText = window.latestSpeedText || '-- km/h';
 
     ctx.save();
     ctx.font = 'bold 24px sans-serif';
     ctx.fillStyle = '#000000';
     ctx.textAlign = 'right';
-    ctx.fillText(speedText, canvas.width - 10, canvas.height );
+    ctx.fillText(speedText, canvas.width + 50 , canvas.height );
     ctx.restore();
   }
 };
@@ -254,7 +254,7 @@ footer {
           await jsonChar.startNotifications();
   
           kgChar.addEventListener('characteristicvaluechanged', handleKg);
-          jsonChar.addEventListener('characteristicvaluechanged', handleJson);
+          jsonChar.addEventListener('characteristicvaluechanged', handleKgArray);
           
           const speedChar = await service.getCharacteristic(SPEED_UUID);
           await speedChar.startNotifications();
@@ -290,37 +290,47 @@ footer {
         if (!isNaN(speedValue)) {
             //document.getElementById('speedDisplay').textContent = `Hastighed: ${speedValue.toFixed(2)} km/h`;
              // Update plugin text for chart
-             window.latestSpeedText = `Hastighed: ${speedValue.toFixed(2)} km/h`;
+             window.latestSpeedText = `${speedValue.toFixed(2)} km/h`;
 
             // Refresh chart to trigger plugin draw
             if (currentChart) currentChart.update('none'); // 'none' to avoid full re-render
         }
     }
 
-   function handleJson(event) {
-      const text = new TextDecoder().decode(event.target.value);
-      const [indexStr, valueStr] = text.split(':');
-      const index = parseInt(indexStr);
-      const value = parseFloat(valueStr);
-    
-      if (isNaN(index) || isNaN(value)) return;
-    
-      // When a new sequence starts
-      if (index === 0) {
-        // Copy current chart data to previous chart
-        previousChart.data.datasets[0].data = [...currentChart.data.datasets[0].data];
-      }
-    
-      // Assign value directly into the current chart’s dataset
-      currentChart.data.datasets[0].data[index] = value;
-    
-      // When last element arrives, update both charts visually
-      if (index === currentChart.data.datasets[0].data.length - 1) {
-        previousChart.update();
-        currentChart.update();
-        updateTop3(currentChart.data.datasets[0].data);
-      }
-    }
+	 let receivedCount = 0;
+
+	function handleKgArray(event) {
+	  const text = new TextDecoder().decode(event.target.value);
+	  const pairs = text.split(','); // ["0:0.10", "1:0.12", ...]
+
+	  pairs.forEach(pair => {
+		const [indexStr, valueStr] = pair.split(':');
+		const index = parseInt(indexStr);
+		const value = parseFloat(valueStr);
+
+		if (isNaN(index) || isNaN(value)) return;
+
+		if (index === 0) {
+		  // Reset counter and copy previous chart
+		  receivedCount = 0;
+		  previousChart.data.datasets[0].data = [...currentChart.data.datasets[0].data];
+		}
+
+		currentChart.data.datasets[0].data[index] = value;
+		receivedCount++;
+
+		console.log("Received array:", index, value);
+
+		
+		
+		previousChart.update();
+		currentChart.update();
+		// When all 50 values are received
+		if (receivedCount === 50) {		
+		updateTop3(currentChart.data.datasets[0].data);
+		}
+	  });
+	}
 
     function setupCharts() {
       if (currentChart) currentChart.destroy();
